@@ -61,3 +61,30 @@ resource "aws_iam_role_policy_attachment" "eks_ecr_readonly" {
   role       = aws_iam_role.eks_nodes.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
+
+# Load Balancer Controller Role
+resource "aws_iam_role" "lb_controller" {
+  name = "${var.project}-${var.environment}-lb-controller-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Federated = var.oidc_provider_arn
+      }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${var.oidc_issuer_url}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "${var.oidc_issuer_url}:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lb_controller" {
+  role       = aws_iam_role.lb_controller.name
+  policy_arn = "arn:aws:iam::${var.account_id}:policy/AWSLoadBalancerControllerIAMPolicy"
+}
