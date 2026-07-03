@@ -1,0 +1,31 @@
+# Node
+node_modules/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# React build output
+/frontend/build
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+*.tfvars.json
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Mac
+.DS_Store
+
+# k6
+load-test.js   # optional — only if you don't want it versioned
