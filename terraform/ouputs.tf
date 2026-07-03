@@ -15,6 +15,7 @@ output "backend_repo_url" {
 }
 
 output "lb_controller_role_arn" {
+<<<<<<< HEAD
   value = module.iam.lb_controller_role_arn
 }
 
@@ -25,3 +26,7 @@ output "jenkins_instance_id" {
 output "jenkins_public_ip" {
   value = module.jenkins.jenkins_public_ip
 }
+=======
+  value = aws_iam_role.lb_controller.arn
+}
+>>>>>>> 0410640 (update outputs)
