@@ -21,6 +21,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'github-pat', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh """
                         git checkout main
+                        git pull --rebase origin main
                         sed -i 's|${ECR_REGISTRY}/tc2-dev-backend:.*|${ECR_REGISTRY}/tc2-dev-backend:${IMAGE_TAG}|' k8s/backend-deployment.yaml
                         git config user.email "jenkins@ci"
                         git config user.name "Jenkins"
@@ -45,6 +46,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'github-pat', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh """
                         git checkout main
+                        git pull --rebase origin main
                         sed -i 's|${ECR_REGISTRY}/tc2-dev-frontend:.*|${ECR_REGISTRY}/tc2-dev-frontend:${IMAGE_TAG}|' k8s/frontend-deployment.yaml
                         git config user.email "jenkins@ci"
                         git config user.name "Jenkins"
