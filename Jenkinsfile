@@ -18,15 +18,16 @@ pipeline {
                     sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
                     sh "docker push ${ECR_REGISTRY}/tc2-dev-backend:${IMAGE_TAG}"
                 }
-                // update image tag in k8s manifest and commit back to GitHub
-                sh """
-                    sed -i 's|${ECR_REGISTRY}/tc2-dev-backend:.*|${ECR_REGISTRY}/tc2-dev-backend:${IMAGE_TAG}|' k8s/backend-deployment.yaml
-                    git config user.email "jenkins@ci"
-                    git config user.name "Jenkins"
-                    git add k8s/backend-deployment.yaml
-                    git commit -m "ci: update backend image to ${IMAGE_TAG}"
-                    git push https://???@github.com/dejourford/devops-code-challenge-3.git main
-                """
+                withCredentials([usernamePassword(credentialsId: 'github-pat', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh """
+                        sed -i 's|${ECR_REGISTRY}/tc2-dev-backend:.*|${ECR_REGISTRY}/tc2-dev-backend:${IMAGE_TAG}|' k8s/backend-deployment.yaml
+                        git config user.email "jenkins@ci"
+                        git config user.name "Jenkins"
+                        git add k8s/backend-deployment.yaml
+                        git commit -m "ci: update backend image to ${IMAGE_TAG}"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/dejourford/devops-code-challenge-3.git main
+                    """
+                }
             }
         }
 
@@ -40,26 +41,17 @@ pipeline {
                     sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
                     sh "docker push ${ECR_REGISTRY}/tc2-dev-frontend:${IMAGE_TAG}"
                 }
-                sh """
-                    sed -i 's|${ECR_REGISTRY}/tc2-dev-frontend:.*|${ECR_REGISTRY}/tc2-dev-frontend:${IMAGE_TAG}|' k8s/frontend-deployment.yaml
-                    git config user.email "jenkins@ci"
-                    git config user.name "Jenkins"
-                    git add k8s/frontend-deployment.yaml
-                    git commit -m "ci: update frontend image to ${IMAGE_TAG}"
-                    git push https://???@github.com/dejourford/devops-code-challenge-3.git main
-                """
+                withCredentials([usernamePassword(credentialsId: 'github-pat', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                    sh """
+                        sed -i 's|${ECR_REGISTRY}/tc2-dev-frontend:.*|${ECR_REGISTRY}/tc2-dev-frontend:${IMAGE_TAG}|' k8s/frontend-deployment.yaml
+                        git config user.email "jenkins@ci"
+                        git config user.name "Jenkins"
+                        git add k8s/frontend-deployment.yaml
+                        git commit -m "ci: update frontend image to ${IMAGE_TAG}"
+                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/dejourford/devops-code-challenge-3.git main
+                    """
+                }
             }
         }
     }
-}
-
-withCredentials([string(credentialsId: 'github-pat', variable: 'GIT_TOKEN')]) {
-    sh """
-        sed -i 's|${ECR_REGISTRY}/tc2-dev-backend:.*|${ECR_REGISTRY}/tc2-dev-backend:${IMAGE_TAG}|' k8s/backend-deployment.yaml
-        git config user.email "jenkins@ci"
-        git config user.name "Jenkins"
-        git add k8s/backend-deployment.yaml
-        git commit -m "ci: update backend image to ${IMAGE_TAG}"
-        git push https://dejourford:${GIT_TOKEN}@github.com/dejourford/devops-code-challenge-3.git main
-    """
 }
