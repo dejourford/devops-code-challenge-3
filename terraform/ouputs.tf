@@ -21,3 +21,11 @@ output "jenkins_public_ip" {
 output "lb_controller_role_arn" {
   value = module.iam.lb_controller_role_arn
 }
+
+output "jenkins_instance_id" {
+  value = module.jenkins.jenkins_instance_id
+}
+
+output "jenkins_public_ip" {
+  value = module.jenkins.jenkins_public_ip
+}
