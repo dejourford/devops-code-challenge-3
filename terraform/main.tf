@@ -48,3 +48,14 @@ module "node_group" {
   node_role_arn      = module.iam.node_role_arn
   private_subnet_ids = module.vpc.private_subnet_ids
 }
+
+# Jenkins
+module "jenkins" {
+  source = "./modules/jenkins"
+
+  project          = var.project
+  environment      = var.environment
+  vpc_id           = module.vpc.vpc_id
+  my_ip            = var.my_ip
+  public_subnet_id = module.vpc.public_subnet_ids[0]
+}

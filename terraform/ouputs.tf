@@ -13,3 +13,7 @@ output "frontend_repo_url" {
 output "backend_repo_url" {
   value = module.ecr.repository_urls["backend"]
 }
+
+output "jenkins_public_ip" {
+  value = module.jenkins.jenkins_public_ip
+}
