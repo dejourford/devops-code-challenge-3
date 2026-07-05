@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 })
 app.get(/.*/, (req, res) => {
     console.log(`${new Date().toISOString()} GET`)
-    res.json({id: ID, deployedVia: "jenkins-argocd-pipeline-again"})
+    res.json({id: ID, deployedVia: "jenkins-argocd-pipeline"})
 })
 
 app.listen(PORT, () => {
