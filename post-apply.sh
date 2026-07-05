@@ -6,6 +6,8 @@ REGION="us-east-2"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 LB_ROLE_ARN=$(cd terraform && terraform output -raw lb_controller_role_arn)
 VPC_ID=$(aws eks describe-cluster --name $CLUSTER_NAME --region $REGION --query "cluster.resourcesVpcConfig.vpcId" --output text)
+FRONTEND_REPO=$(cd terraform && terraform output -raw frontend_repo_url)
+BACKEND_REPO=$(cd terraform && terraform output -raw backend_repo_url)
 
 echo "=== Configuring kubectl ==="
 aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
@@ -48,13 +50,3 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 kubectl patch deployment metrics-server -n kube-system \
   --type='json' \
-  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
-
-echo "=== Waiting for Load Balancer Controller to be ready ==="
-kubectl rollout status deployment aws-load-balancer-controller -n kube-system --timeout=120s
-
-echo "=== Deploying application ==="
-kubectl apply -f k8s/
-
-echo "=== Done! Waiting for ingress address... ==="
-kubectl get ingress -w
