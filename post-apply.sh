@@ -49,8 +49,33 @@ helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-contro
   --set region=$REGION \
   --set vpcId=$VPC_ID
 
+echo "=== Waiting for Load Balancer Controller webhook to be ready ==="
+kubectl rollout status deployment aws-load-balancer-controller -n kube-system --timeout=120s
+sleep 30
+
 echo "=== Installing Metrics Server ==="
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 kubectl patch deployment metrics-server -n kube-system \
   --type='json' \
+  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+
+echo "=== Pushing Docker images to ECR ==="
+aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin 149465511648.dkr.ecr.us-east-2.amazonaws.com
+
+BACKEND_TAG=$(grep -m1 "image:.*tc2-dev-backend" k8s/backend-deployment.yaml | sed 's/.*://g' | tr -d ' ')
+FRONTEND_TAG=$(grep -m1 "image:.*tc2-dev-frontend" k8s/frontend-deployment.yaml | sed 's/.*://g' | tr -d ' ')
+
+echo "Building and pushing backend ($BACKEND_TAG)..."
+docker build --platform linux/amd64 -t $BACKEND_REPO:$BACKEND_TAG ./backend
+docker push $BACKEND_REPO:$BACKEND_TAG
+
+echo "Building and pushing frontend ($FRONTEND_TAG)..."
+docker build --platform linux/amd64 --build-arg REACT_APP_API_URL=/api -t $FRONTEND_REPO:$FRONTEND_TAG ./frontend
+docker push $FRONTEND_REPO:$FRONTEND_TAG
+
+echo "=== Deploying application ==="
+kubectl apply -f k8s/
+
+echo "=== Done! Waiting for ingress address... ==="
+kubectl get ingress -w
