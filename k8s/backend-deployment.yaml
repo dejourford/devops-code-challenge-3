@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: 149465511648.dkr.ecr.us-east-2.amazonaws.com/tc2-dev-backend:4c846b8
+          image: 149465511648.dkr.ecr.us-east-2.amazonaws.com/tc2-dev-backend:ca02e6f
           ports:
             - containerPort: 3000
           env:
